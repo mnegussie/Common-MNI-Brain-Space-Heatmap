@@ -3,4 +3,5 @@ The warp script normalizes scans into common brain space and the heatmap script 
 # Recommend running on linux, importing ANTS package into python
 First step is to install linux on Windows or Mac if not running on a linux machine 
 install ants package:  https://github.com/ANTsX/ANTs/wiki/Compiling-ANTs-on-Linux-and-Mac-OS
+
 segment your scans: most time consuming part
