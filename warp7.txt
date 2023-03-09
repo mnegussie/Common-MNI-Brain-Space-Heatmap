@@ -1,0 +1,38 @@
+#mport necessary packages
+import os
+import ants
+
+# Set the directory containing the segmentations and reference images
+seg_dir = "/path/to/segmentations"
+ref_dir = "/path/to/original/T1/scans"
+#T1 scans should be in .nii.gz or .nii format
+#if different suffixes for T1 scans, split into different directories and run this script twice
+
+# Set the MNI template image
+template_image = ants.image_read("/mnt/d/segmented_tumors_MN/MNI_warp/MNI_template/MNI152_T1_1mm.nii.gz")
+
+# Create a list of the segmentations and their filenames
+seg_list = []
+seg_filename_list = []
+for seg_filename in os.listdir(seg_dir):
+  seg_list.append(ants.image_read(os.path.join(seg_dir, seg_filename)))
+  seg_filename_list.append(seg_filename)
+
+# Loop through the segmentations and filenames
+for i in range(len(seg_list)):
+  # Get the current segmentation and filename
+  seg = seg_list[i]
+  seg_filename = seg_filename_list[i]
+  
+  # Get the corresponding reference image filename
+  ref_filename = seg_filename.split("_")[0] + "_T1.nii.gz"
+  ref_image = ants.image_read(os.path.join(ref_dir, ref_filename))
+  
+  # Create an affine transformation using the SyN algorithm
+  tx = ants.registration(template_image, ref_image, "SyN")
+  
+  # Warp the segmentation to the MNI space using the affine transformation
+  seg_warped = ants.apply_transforms(template_image, seg, tx["fwdtransforms"], interpolator="nearestNeighbor")
+  
+  # Save the normalized segmentation
+  ants.image_write(seg_warped, os.path.join(seg_dir, "normalized_" + seg_filename))
